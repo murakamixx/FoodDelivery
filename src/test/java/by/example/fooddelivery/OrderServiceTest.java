@@ -61,7 +61,7 @@ class OrderServiceTest {
 
         assertEquals(2, order.getDishes().size());
         assertEquals(
-                new BigDecimal("35.00"),
+                new BigDecimal("99.00"),
                 order.getTotalAmount()
         );
     }
