@@ -1,0 +1,2 @@
+Food Delivery Maven project
+Variant 5 special Maven profile: special-build
