@@ -7,8 +7,11 @@ import by.example.fooddelivery.repository.InMemoryOrderRepository;
 import by.example.fooddelivery.repository.OrderRepository;
 import by.example.fooddelivery.service.OrderService;
 import java.math.BigDecimal;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class App {
+    private static final Logger LOGGER = LoggerFactory.getLogger(App.class);
     public static void main(String[] args) {
         OrderRepository repository = new InMemoryOrderRepository();
         OrderService service = new OrderService(repository, new BigDecimal("20.00"));
@@ -21,8 +24,8 @@ public class App {
 
         service.placeOrder(order);
 
-        System.out.println("Заказ №" + order.getId() + " успешно оформлен.");
-        System.out.println("Клиент: " + customer.getName());
-        System.out.println("Сумма: " + order.getTotalAmount());
+        LOGGER.info(
+                "Заказ {} успешно размещен, всего={}",
+                order.getId(), order.getTotalAmount());
     }
 }

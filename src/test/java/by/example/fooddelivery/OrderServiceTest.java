@@ -8,7 +8,11 @@ import by.example.fooddelivery.repository.OrderRepository;
 import by.example.fooddelivery.service.OrderService;
 import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.Optional;
 
 class OrderServiceTest {
     private final Customer customer = new Customer(1, "Тестовый клиент", "Тестовый адрес");
@@ -64,5 +68,30 @@ class OrderServiceTest {
                 new BigDecimal("35.00"),
                 order.getTotalAmount()
         );
+
+    }
+    @Test
+    void shouldReportRepositoryFailure() {
+        OrderRepository repository = new OrderRepository() {
+            @Override
+            public void save(Order order) {
+                throw new IllegalStateException("Storage unavailable");
+            }
+
+            @Override
+            public Optional<Order> findById(int id) {
+                return Optional.empty();
+            }
+        };
+
+        OrderService service =
+                new OrderService(repository, new BigDecimal("20.00"));
+        Order order = service.createOrder(5, customer);
+        service.addDish(order, new Dish(1, "Пицца", new BigDecimal("25.00")));
+
+        IllegalStateException exception =
+                assertThrows(IllegalStateException.class, () -> service.placeOrder(order));
+
+        assertEquals("Storage unavailable", exception.getMessage());
     }
 }

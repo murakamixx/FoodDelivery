@@ -1,6 +1,15 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout(true)
+        disableConcurrentBuilds()
+    }
+
+    triggers {
+        pollSCM('* * * * *')
+    }
+
     environment {
         JAVA_HOME = 'C:\\Program Files\\Java\\jdk-21.0.12'
         PATH = "${JAVA_HOME}\\bin;${env.PATH}"
@@ -15,28 +24,48 @@ pipeline {
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
 
         stage('Build') {
             steps {
-                bat 'java -version'
-                bat 'javac -version'
-                bat 'echo JAVA_HOME=%JAVA_HOME%'
-                bat 'mvn compile'
+                bat 'mvn -B compile'
+            }
+        }
+
+        stage('Static Analysis') {
+            steps {
+                bat 'mvn -B checkstyle:check'
             }
         }
 
         stage('Test') {
             steps {
                 echo "Город доставки: ${params.DELIVERY_CITY}"
-                bat 'mvn test'
+                bat 'mvn -B test'
             }
         }
 
         stage('Package') {
             steps {
-                bat 'mvn package -DskipTests'
+                bat 'mvn -B package -DskipTests'
             }
         }
+    }
 
+    post {
+        always {
+            junit(
+                testResults: 'target/surefire-reports/*.xml',
+                allowEmptyResults: true
+            )
+            archiveArtifacts(
+                artifacts: 'target/checkstyle-result.xml, target/logs/*.log, target/*.jar',
+                allowEmptyArchive: true
+            )
+        }
     }
 }
