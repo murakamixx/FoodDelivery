@@ -24,7 +24,7 @@ public class OrderService {
         return new Order(id, customer);
     }
 
-    public void addDish(Order order, Dish dish) {
+    public void AddDish(Order order, Dish dish) {
         order.addDish(dish);
     }
 
